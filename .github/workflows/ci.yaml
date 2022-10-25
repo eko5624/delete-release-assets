@@ -1,33 +1,35 @@
 name: Continuous Integration
 
 on:
-  pull_request:
-  push:
+  #pull_request:
+  #push:
   workflow_dispatch:
   #schedule:
   #- cron: '30 0 * * MON'  
 
 jobs:
   build:
-    name: Build and Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
-      - run: npm ci
-      - run: npm run build
-      - run: npm test
-
-  self-test:
-    name: Self Test
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@main
-    - name: self test
-      uses: ./
+    - name: Checkout
+      uses: actions/checkout@main
       with:
-        token: ${{ github.token }}
-        fail-if-no-assets: false
-        tag: test_tag
-        assets: |
-          foo.*
-          assets.txt
+        fetch-depth: 0
+    - name: Install git
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install git
+    - name: Set env
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"    
+    - name: Build and Test
+      run: |
+        npm ci
+        npm run build
+        npm test
+    - name: release
+      run: |
+        git commit -am "Automate" || echo "nothing updated"
+        git push        
+
